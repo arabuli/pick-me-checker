@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Pick-Me Checker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fce7f3; /* pink-100 */
+            background-image: radial-gradient(#fbcfe8 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .hide {
+            display: none !important;
+        }
+        /* Custom scrollbar for textarea */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+        textarea::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+            border-radius: 4px;
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        textarea::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex items-center justify-center p-4">
+
+    <main class="glass-panel w-full max-w-4xl rounded-3xl shadow-xl p-6 sm:p-10 transition-all duration-300 flex flex-col gap-8">
+        
+        <!-- Header -->
+        <header class="text-center space-y-2">
+            <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-violet-500">
+                The Pick-Me Checker 🔍
+            </h1>
+            <p class="text-slate-500 font-medium text-sm sm:text-base max-w-xl mx-auto">
+                Paste a sentence in English, Georgian, or German. Our highly advanced, completely judgmental AI panel will determine the vibes.
+            </p>
+        </header>
+
+        <!-- Input Section -->
+        <section class="flex flex-col gap-4">
+            <textarea id="userInput" rows="4" 
+                class="w-full p-4 rounded-xl border-2 border-pink-200 focus:border-pink-500 focus:ring focus:ring-pink-200 transition-all resize-none shadow-sm text-lg placeholder-slate-400"
+                placeholder="e.g., 'I prefer hanging out with guys because there's less drama...'"></textarea>
+            
+            <button id="analyzeBtn" class="bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all w-full sm:w-auto self-center text-lg">
+                Analyze Vibes ✨
+            </button>
+        </section>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="hide flex flex-col items-center justify-center py-10 space-y-4">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
+            <p class="text-pink-600 font-medium animate-pulse">Consulting the group chat...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorState" class="hide bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded-xl text-center">
+            <p id="errorMessage">Oops! Something went wrong.</p>
+        </div>
+
+        <!-- Results Section -->
+        <section id="resultsSection" class="hide flex flex-col gap-6 animate-fade-in-up">
+            
+            <!-- Verdict & General Consensus -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 text-center space-y-4">
+                <h2 class="text-sm uppercase tracking-wider text-slate-400 font-bold">The Verdict</h2>
+                <div id="verdictText" class="text-3xl sm:text-4xl font-extrabold text-pink-600">
+                    <!-- Verdict goes here -->
+                </div>
+                
+                <!-- Overall Percentage Bar -->
+                <div class="flex items-center justify-center gap-4 mt-2">
+                    <div class="w-full max-w-sm bg-pink-100 rounded-full h-3">
+                        <div id="overallBar" class="bg-gradient-to-r from-pink-500 to-violet-500 h-3 rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                    </div>
+                    <span id="overallPercentText" class="font-extrabold text-pink-600 text-xl w-12 text-right">0%</span>
+                </div>
+
+                <p id="consensusText" class="text-slate-600 leading-relaxed text-sm sm:text-base text-left bg-slate-50 p-4 rounded-lg mt-4">
+                    <!-- Consensus goes here -->
+                </p>
+            </div>
+
+            <!-- The Friend Panel -->
+            <div class="space-y-4">
+                <h3 class="text-xl font-bold text-slate-800 text-center flex items-center justify-center gap-2">
+                    <span>☕</span> The Friend Panel
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    
+                    <!-- Saba Card -->
+                    <div class="bg-white rounded-xl p-5 shadow-sm border-l-4 border-l-blue-400 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xl">💅</span>
+                                <h4 class="font-bold text-slate-800">Saba's Take</h4>
+                            </div>
+                            <span id="sabaBadge" class="bg-blue-100 text-blue-700 py-1 px-2 rounded-md font-bold text-xs">0%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-1.5 mb-3">
+                            <div id="sabaBar" class="bg-blue-400 h-1.5 rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                        </div>
+                        <p id="sabaText" class="text-sm text-slate-600 leading-relaxed">
+                            <!-- text -->
+                        </p>
+                    </div>
+
+                    <!-- Ana Card -->
+                    <div class="bg-white rounded-xl p-5 shadow-sm border-l-4 border-l-red-400 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xl">🚩</span>
+                                <h4 class="font-bold text-slate-800">Ana's Take</h4>
+                            </div>
+                            <span id="anaBadge" class="bg-red-100 text-red-700 py-1 px-2 rounded-md font-bold text-xs">0%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-1.5 mb-3">
+                            <div id="anaBar" class="bg-red-400 h-1.5 rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                        </div>
+                        <p id="anaText" class="text-sm text-slate-600 leading-relaxed">
+                            <!-- text -->
+                        </p>
+                    </div>
+
+                    <!-- Mari Card -->
+                    <div class="bg-white rounded-xl p-5 shadow-sm border-l-4 border-l-yellow-400 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xl">🎭</span>
+                                <h4 class="font-bold text-slate-800">Mari's Take</h4>
+                            </div>
+                            <span id="mariBadge" class="bg-yellow-100 text-yellow-700 py-1 px-2 rounded-md font-bold text-xs">0%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-1.5 mb-3">
+                            <div id="mariBar" class="bg-yellow-400 h-1.5 rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                        </div>
+                        <p id="mariText" class="text-sm text-slate-600 leading-relaxed">
+                            <!-- text -->
+                        </p>
+                    </div>
+
+                    <!-- Mariam Card -->
+                    <div class="bg-white rounded-xl p-5 shadow-sm border-l-4 border-l-emerald-400 hover:shadow-md transition-shadow">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xl">🏛️</span>
+                                <h4 class="font-bold text-slate-800">Mariam's Take</h4>
+                            </div>
+                            <span id="mariamBadge" class="bg-emerald-100 text-emerald-700 py-1 px-2 rounded-md font-bold text-xs">0%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-1.5 mb-3">
+                            <div id="mariamBar" class="bg-emerald-400 h-1.5 rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                        </div>
+                        <p id="mariamText" class="text-sm text-slate-600 leading-relaxed">
+                            <!-- text -->
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const userInput = document.getElementById('userInput');
+        const loadingState = document.getElementById('loadingState');
+        const resultsSection = document.getElementById('resultsSection');
+        const errorState = document.getElementById('errorState');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // Result Elements
+        const verdictText = document.getElementById('verdictText');
+        const overallBar = document.getElementById('overallBar');
+        const overallPercentText = document.getElementById('overallPercentText');
+        const consensusText = document.getElementById('consensusText');
+        
+        const sabaText = document.getElementById('sabaText');
+        const sabaBadge = document.getElementById('sabaBadge');
+        const sabaBar = document.getElementById('sabaBar');
+        
+        const anaText = document.getElementById('anaText');
+        const anaBadge = document.getElementById('anaBadge');
+        const anaBar = document.getElementById('anaBar');
+        
+        const mariText = document.getElementById('mariText');
+        const mariBadge = document.getElementById('mariBadge');
+        const mariBar = document.getElementById('mariBar');
+        
+        const mariamText = document.getElementById('mariamText');
+        const mariamBadge = document.getElementById('mariamBadge');
+        const mariamBar = document.getElementById('mariamBar');
+
+        // Gemini API configuration
+        const apiKey = ""; // Left empty as requested for automatic injection
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+        // System Instruction defining the persona and rules
+        const systemPrompt = `You are a multi-lingual "Pick-Me" Detector. Your job is to analyze sentences in English, Georgian, or German, and determine if the author is exhibiting "pick-me" behavior.
+
+Definitions for the Friend Panel:
+- Saba: Looks for virtue-signaling, micro-trend gatekeeping, unprompted superiority, or performative quirky/ironic energy.
+- Ana: Looks for identity morphing, altering authentic preferences to please a specific target, and considers it a serious interpersonal red flag.
+- Mari: Looks for high-effort try-hard behavior, obvious staging, or performative "girl's girl" meta-posturing.
+- Mariam: Analyzes through a societal lens—is this a symptom of patriarchal conditioning? Is the person conforming to systemic expectations or ironically owning it?
+
+Your response MUST be a valid JSON object.`;
+
+        // JSON Schema for structured output
+        const responseSchema = {
+            type: "OBJECT",
+            properties: {
+                verdict: { 
+                    type: "STRING", 
+                    description: "A short, punchy verdict. e.g., '100% Pick-Me', 'Not a Pick-Me', 'Borderline', 'Tragic Pick-Me'" 
+                },
+                overallPercentage: {
+                    type: "INTEGER",
+                    description: "An overall score from 0 to 100 on how 'pick-me' the sentence is."
+                },
+                generalConsensus: { 
+                    type: "STRING",
+                    description: "Why it is or isn't a pick-me trait based on the standard internet definition."
+                },
+                saba: { 
+                    type: "STRING",
+                    description: "Saba's perspective based on her definition."
+                },
+                sabaPercentage: { type: "INTEGER", description: "Score 0-100 according to Saba." },
+                ana: { 
+                    type: "STRING",
+                    description: "Ana's perspective based on her definition."
+                },
+                anaPercentage: { type: "INTEGER", description: "Score 0-100 according to Ana." },
+                mari: { 
+                    type: "STRING",
+                    description: "Mari's perspective based on her definition."
+                },
+                mariPercentage: { type: "INTEGER", description: "Score 0-100 according to Mari." },
+                mariam: { 
+                    type: "STRING",
+                    description: "Mariam's perspective based on her definition."
+                },
+                mariamPercentage: { type: "INTEGER", description: "Score 0-100 according to Mariam." }
+            },
+            required: ["verdict", "overallPercentage", "generalConsensus", "saba", "sabaPercentage", "ana", "anaPercentage", "mari", "mariPercentage", "mariam", "mariamPercentage"]
+        };
+
+        async function analyzeText() {
+            const text = userInput.value.trim();
+            
+            if (!text) {
+                showError("Please enter a sentence to analyze!");
+                return;
+            }
+
+            // UI Updates
+            errorState.classList.add('hide');
+            resultsSection.classList.add('hide');
+            loadingState.classList.remove('hide');
+            analyzeBtn.disabled = true;
+            analyzeBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            const payload = {
+                contents: [{ parts: [{ text: text }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: responseSchema
+                }
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0) {
+                    const jsonString = result.candidates[0].content.parts[0].text;
+                    const parsedData = JSON.parse(jsonString);
+                    renderResults(parsedData);
+                } else {
+                    throw new Error("Invalid response format from AI.");
+                }
+
+            } catch (error) {
+                console.error("Error analyzing text:", error);
+                showError("Failed to analyze. The group chat might be busy. Please try again.");
+            } finally {
+                loadingState.classList.add('hide');
+                analyzeBtn.disabled = false;
+                analyzeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        function renderResults(data) {
+            // Reset widths for animation
+            overallBar.style.width = '0%';
+            sabaBar.style.width = '0%';
+            anaBar.style.width = '0%';
+            mariBar.style.width = '0%';
+            mariamBar.style.width = '0%';
+
+            verdictText.textContent = data.verdict;
+            consensusText.textContent = data.generalConsensus;
+            
+            sabaText.textContent = data.saba;
+            anaText.textContent = data.ana;
+            mariText.textContent = data.mari;
+            mariamText.textContent = data.mariam;
+
+            sabaBadge.textContent = `${data.sabaPercentage}%`;
+            anaBadge.textContent = `${data.anaPercentage}%`;
+            mariBadge.textContent = `${data.mariPercentage}%`;
+            mariamBadge.textContent = `${data.mariamPercentage}%`;
+            overallPercentText.textContent = `${data.overallPercentage}%`;
+
+            resultsSection.classList.remove('hide');
+
+            // Trigger animations after unhiding
+            setTimeout(() => {
+                overallBar.style.width = `${data.overallPercentage}%`;
+                sabaBar.style.width = `${data.sabaPercentage}%`;
+                anaBar.style.width = `${data.anaPercentage}%`;
+                mariBar.style.width = `${data.mariPercentage}%`;
+                mariamBar.style.width = `${data.mariamPercentage}%`;
+            }, 100);
+        }
+
+        function showError(msg) {
+            errorMessage.textContent = msg;
+            errorState.classList.remove('hide');
+        }
+
+        // Event Listeners
+        analyzeBtn.addEventListener('click', analyzeText);
+        
+        // Allow submitting with Ctrl+Enter or Cmd+Enter
+        userInput.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                analyzeText();
+            }
+        });
+    </script>
+    <style>
+        /* Simple fade-in animation for results */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+    </style>
+</body>
+</html>
