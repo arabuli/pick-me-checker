@@ -3,415 +3,471 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Group Chat Pick-Me Checker</title>
+    <title>The Pick-Me Checker | Dark & Chaotic Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-color: #121212;
-            --panel-bg: #1e1e1e;
-            --text-main: #f3f4f6;
-            --text-muted: #9ca3af;
-            --accent-primary: #8b5cf6;
-            --accent-hover: #7c3aed;
-            --ana-red: #ef4444;
-            --mariam-soft: #ec4899;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-
         body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2rem 1rem;
-            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* slate-900 */
+            color: #f8fafc; /* slate-50 */
+            background-image: radial-gradient(#334155 1px, transparent 1px);
+            background-size: 24px 24px;
             transition: background-color 0.5s ease;
         }
-
-        .container {
-            max-width: 800px;
-            width: 100%;
-            background: var(--panel-bg);
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 0.5rem;
-            font-size: 2rem;
-            background: linear-gradient(to right, #8b5cf6, #ec4899);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        p.subtitle {
-            text-align: center;
-            color: var(--text-muted);
-            margin-bottom: 2rem;
-        }
-
-        textarea {
-            width: 100%;
-            height: 120px;
-            background: #2a2a2a;
-            border: 1px solid #3f3f46;
-            border-radius: 12px;
-            padding: 1rem;
-            color: white;
-            font-size: 1rem;
-            resize: none;
-            margin-bottom: 1rem;
-        }
-
-        textarea:focus {
-            outline: none;
-            border-color: var(--accent-primary);
-        }
-
-        button {
-            width: 100%;
-            padding: 1rem;
-            border: none;
-            border-radius: 12px;
-            background: var(--accent-primary);
-            color: white;
-            font-weight: bold;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        button:hover {
-            background: var(--accent-hover);
-        }
-
-        button:disabled {
-            background: #4b5563;
-            cursor: not-allowed;
-        }
-
-        #loading-text {
-            text-align: center;
-            margin-top: 1rem;
-            font-style: italic;
-            color: var(--accent-primary);
-            display: none;
-        }
-
-        #results {
-            display: none;
-            margin-top: 2rem;
-        }
-
-        .verdict-box {
-            background: #2a2a2a;
-            padding: 1.5rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-
-        .verdict-title {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .friend-card {
-            background: #2a2a2a;
-            padding: 1.5rem;
-            border-radius: 12px;
-            border-left: 4px solid var(--accent-primary);
-        }
-
-        .friend-card.ana-alert {
-            border-left-color: var(--ana-red);
-            animation: pulse-red 2s infinite;
-        }
         
-        .friend-card.mariam-card {
-            border-left-color: var(--mariam-soft);
+        /* Glassmorphism for Dark Mode */
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.85); /* slate-800 */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        @keyframes pulse-red {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        .card-bg {
+            background: rgba(15, 23, 42, 0.6); /* slate-900 */
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .friend-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
+        .hide {
+            display: none !important;
         }
 
-        .friend-name {
-            font-weight: bold;
-            font-size: 1.2rem;
+        /* Scrollbar */
+        textarea::-webkit-scrollbar { width: 8px; }
+        textarea::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
+        textarea::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        textarea::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
         }
 
-        .percentage {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: var(--accent-primary);
+        @keyframes redAlertPulse {
+            0% { background-color: #0f172a; }
+            50% { background-color: #450a0a; } /* dark red */
+            100% { background-color: #0f172a; }
         }
-        
-        .mariam-card .percentage {
-            color: var(--mariam-soft);
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #3f3f46;
-            border-radius: 4px;
-            margin-bottom: 1rem;
-            overflow: hidden;
+        .theme-red-alert {
+            animation: redAlertPulse 3s infinite;
+            background-image: radial-gradient(#7f1d1d 1px, transparent 1px);
         }
 
-        .progress-fill {
-            height: 100%;
-            background: var(--accent-primary);
-            width: 0%;
-            transition: width 1s ease-out;
+        /* Floating red flags for Ana's wrath */
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(10deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
         }
-
-        .ana-alert .progress-fill { background: var(--ana-red); }
-        .mariam-card .progress-fill { background: var(--mariam-soft); }
-
-        .analysis-text {
-            font-size: 0.95rem;
-            line-height: 1.5;
-            color: #d1d5db;
+        .floating-flag {
+            animation: float 2s ease-in-out infinite;
         }
-
-        .red-flag-bg {
-            background-color: #450a0a !important;
-        }
-
-        #share-btn {
-            background: #2563eb;
-            margin-top: 2rem;
-            display: none;
-        }
-        
-        #share-btn:hover { background: #1d4ed8; }
     </style>
 </head>
-<body>
+<body id="bodyElement" class="min-h-screen flex items-center justify-center p-4">
 
-    <div class="container">
-        <h1>The Pick-Me Checker</h1>
-        <p class="subtitle">Will the group chat judge you? Let's find out.</p>
+    <main class="glass-panel w-full max-w-5xl rounded-3xl shadow-2xl p-6 sm:p-10 transition-all duration-300 flex flex-col gap-8 relative overflow-hidden">
+        
+        <header class="text-center space-y-3 z-10">
+            <h1 class="text-4xl sm:text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-purple-500 to-indigo-500 drop-shadow-sm">
+                The Pick-Me Checker 🔍
+            </h1>
+            <p class="text-slate-400 font-medium text-sm sm:text-base max-w-xl mx-auto">
+                Drop a sentence in English, Georgian, or German. Let the group chat mercilessly judge your vibe.
+            </p>
+        </header>
 
-        <textarea id="input-text" placeholder="Paste the suspicious sentence here (English, Georgian, or German)..."></textarea>
-        <button id="analyze-btn" onclick="runAnalysis()">Judge This Sentence</button>
-        <div id="loading-text">Consulting the group chat...</div>
-
-        <div id="results">
-            <div class="verdict-box">
-                <div class="verdict-title" id="main-verdict">100% Pick-Me</div>
-                <p class="analysis-text" id="general-consensus">Loading consensus...</p>
-            </div>
-
-            <div class="grid">
-                <!-- Saba -->
-                <div class="friend-card" id="card-saba">
-                    <div class="friend-header">
-                        <span class="friend-name">Saba 🧔🏻‍♂️</span>
-                        <span class="percentage" id="score-saba">0%</span>
-                    </div>
-                    <div class="progress-bar"><div class="progress-fill" id="bar-saba"></div></div>
-                    <p class="analysis-text" id="text-saba">...</p>
-                </div>
-
-                <!-- Ana -->
-                <div class="friend-card" id="card-ana">
-                    <div class="friend-header">
-                        <span class="friend-name">Ana 💅</span>
-                        <span class="percentage" id="score-ana" style="color: var(--ana-red);">0%</span>
-                    </div>
-                    <div class="progress-bar"><div class="progress-fill" id="bar-ana" style="background: var(--ana-red);"></div></div>
-                    <p class="analysis-text" id="text-ana">...</p>
-                </div>
-
-                <!-- Mari -->
-                <div class="friend-card" id="card-mari">
-                    <div class="friend-header">
-                        <span class="friend-name">Mari 🎧</span>
-                        <span class="percentage" id="score-mari">0%</span>
-                    </div>
-                    <div class="progress-bar"><div class="progress-fill" id="bar-mari"></div></div>
-                    <p class="analysis-text" id="text-mari">...</p>
-                </div>
-
-                <!-- Mariam -->
-                <div class="friend-card mariam-card" id="card-mariam">
-                    <div class="friend-header">
-                        <span class="friend-name">Mariam ❤️</span>
-                        <span class="percentage" id="score-mariam">0%</span>
-                    </div>
-                    <div class="progress-bar"><div class="progress-fill" id="bar-mariam"></div></div>
-                    <p class="analysis-text" id="text-mariam">...</p>
-                </div>
-            </div>
+        <section class="flex flex-col gap-5 z-10">
+            <textarea id="userInput" rows="4" 
+                class="w-full p-5 rounded-2xl bg-slate-900 border-2 border-slate-700 focus:border-fuchsia-500 focus:ring focus:ring-fuchsia-500/20 transition-all resize-none shadow-inner text-lg placeholder-slate-600 text-slate-100 outline-none"
+                placeholder="e.g., 'I actually don't own a TV, I just read philosophy and boulder...'"></textarea>
             
-            <button id="share-btn" onclick="copyToClipboard()">📋 Copy Verdict for the Group Chat</button>
+            <button id="analyzeBtn" class="bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-black py-4 px-10 rounded-2xl shadow-[0_0_20px_rgba(192,38,211,0.3)] hover:shadow-[0_0_30px_rgba(192,38,211,0.5)] transform hover:-translate-y-1 transition-all w-full sm:w-auto self-center text-xl tracking-wide uppercase">
+                Judge Me ✨
+            </button>
+        </section>
+
+        <div id="loadingState" class="hide flex flex-col items-center justify-center py-12 space-y-6 z-10">
+            <div class="relative w-16 h-16">
+                <div class="absolute inset-0 rounded-full border-t-4 border-fuchsia-500 animate-spin"></div>
+                <div class="absolute inset-2 rounded-full border-b-4 border-purple-500 animate-spin" style="animation-direction: reverse; animation-duration: 1.5s;"></div>
+            </div>
+            <p id="loadingMessage" class="text-fuchsia-400 font-bold text-lg animate-pulse tracking-wide text-center h-8">
+                Consulting the group chat...
+            </p>
         </div>
-    </div>
+
+        <div id="errorState" class="hide bg-red-900/40 border border-red-500/50 text-red-200 px-6 py-4 rounded-2xl text-center backdrop-blur-sm z-10">
+            <p id="errorMessage" class="font-bold text-lg">Oops! Something went wrong.</p>
+        </div>
+
+        <section id="resultsSection" class="hide flex flex-col gap-8 animate-fade-in-up z-10">
+            
+            <!-- Verdict -->
+            <div class="card-bg rounded-3xl p-8 shadow-xl text-center space-y-6 relative overflow-hidden group">
+                <div class="absolute -inset-1 bg-gradient-to-r from-fuchsia-500 via-purple-500 to-indigo-500 rounded-3xl blur opacity-20 group-hover:opacity-30 transition duration-1000"></div>
+                <div class="relative">
+                    <h2 class="text-xs uppercase tracking-[0.2em] text-slate-400 font-black mb-2">The Verdict</h2>
+                    <div id="verdictText" class="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-400 mb-6">
+                        <!-- Verdict -->
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+                        <div class="w-full max-w-md bg-slate-800 rounded-full h-4 shadow-inner overflow-hidden">
+                            <div id="overallBar" class="bg-gradient-to-r from-fuchsia-500 to-purple-500 h-4 rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                        </div>
+                        <span id="overallPercentText" class="font-black text-fuchsia-400 text-3xl w-20 text-center drop-shadow-md">0%</span>
+                    </div>
+
+                    <p id="consensusText" class="text-slate-300 leading-relaxed sm:text-lg text-left bg-slate-900/80 p-5 rounded-xl mt-6 border border-slate-700/50 italic">
+                        <!-- Consensus -->
+                    </p>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    
+                    <!-- Saba -->
+                    <div class="card-bg rounded-2xl p-6 shadow-lg border-l-4 border-l-cyan-400 hover:-translate-y-1 transition-transform relative">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <span class="text-2xl drop-shadow-md">💅</span>
+                                <h4 class="font-black text-slate-100 text-lg">Saba's Take</h4>
+                            </div>
+                            <span id="sabaBadge" class="bg-cyan-900/50 text-cyan-300 border border-cyan-700/50 py-1 px-3 rounded-lg font-black text-sm">0%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-full h-2 mb-4 overflow-hidden">
+                            <div id="sabaBar" class="bg-cyan-400 h-2 rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(34,211,238,0.5)]" style="width: 0%"></div>
+                        </div>
+                        <p id="sabaText" class="text-sm text-slate-300 leading-relaxed">...</p>
+                    </div>
+
+                    <!-- Ana -->
+                    <div id="anaCard" class="card-bg rounded-2xl p-6 shadow-lg border-l-4 border-l-red-500 hover:-translate-y-1 transition-transform relative overflow-hidden">
+                        <!-- Hidden flags for UI reaction -->
+                        <span id="anaFlag1" class="floating-flag absolute top-2 right-12 text-2xl hide opacity-50">🚩</span>
+                        <span id="anaFlag2" class="floating-flag absolute bottom-2 right-4 text-3xl hide opacity-30" style="animation-delay: 0.5s;">🚩</span>
+
+                        <div class="flex items-center justify-between mb-4 relative z-10">
+                            <div class="flex items-center gap-3">
+                                <span class="text-2xl drop-shadow-md">🚩</span>
+                                <h4 class="font-black text-slate-100 text-lg">Ana's Take</h4>
+                            </div>
+                            <span id="anaBadge" class="bg-red-900/50 text-red-300 border border-red-700/50 py-1 px-3 rounded-lg font-black text-sm">0%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-full h-2 mb-4 overflow-hidden relative z-10">
+                            <div id="anaBar" class="bg-red-500 h-2 rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(239,68,68,0.5)]" style="width: 0%"></div>
+                        </div>
+                        <p id="anaText" class="text-sm text-slate-300 leading-relaxed relative z-10">...</p>
+                    </div>
+
+                    <!-- Mari -->
+                    <div class="card-bg rounded-2xl p-6 shadow-lg border-l-4 border-l-yellow-400 hover:-translate-y-1 transition-transform">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <span class="text-2xl drop-shadow-md">🎭</span>
+                                <h4 class="font-black text-slate-100 text-lg">Mari's Take</h4>
+                            </div>
+                            <span id="mariBadge" class="bg-yellow-900/50 text-yellow-300 border border-yellow-700/50 py-1 px-3 rounded-lg font-black text-sm">0%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-full h-2 mb-4 overflow-hidden">
+                            <div id="mariBar" class="bg-yellow-400 h-2 rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(250,204,21,0.5)]" style="width: 0%"></div>
+                        </div>
+                        <p id="mariText" class="text-sm text-slate-300 leading-relaxed">...</p>
+                    </div>
+
+                    <!-- Mariam -->
+                    <div class="card-bg rounded-2xl p-6 shadow-lg border-l-4 border-l-emerald-400 hover:-translate-y-1 transition-transform relative">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <span class="text-2xl drop-shadow-md">❤️</span>
+                                <h4 class="font-black text-slate-100 text-lg flex items-center gap-2 text-pink-400">
+                                    Mariam
+                                    <span id="systemicVictimBadge" title="Systemic Victim" class="hide text-sm bg-emerald-900/80 border border-emerald-500 text-emerald-300 px-2 py-0.5 rounded-full shadow-lg ml-1">🛡️ Victim</span>
+                                </h4>
+                            </div>
+                            <span id="mariamBadge" class="bg-emerald-900/50 text-emerald-300 border border-emerald-700/50 py-1 px-3 rounded-lg font-black text-sm">0%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-full h-2 mb-4 overflow-hidden">
+                            <div id="mariamBar" class="bg-emerald-400 h-2 rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(52,211,153,0.5)]" style="width: 0%"></div>
+                        </div>
+                        <p id="mariamText" class="text-sm text-slate-300 leading-relaxed">...</p>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="flex justify-center mt-4">
+                <button id="shareBtn" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold py-3 px-8 rounded-xl shadow-lg transition-colors flex items-center gap-2 group">
+                    <span class="group-hover:rotate-12 transition-transform">🔗</span> 
+                    <span>Copy to roast in Group Chat</span>
+                </button>
+            </div>
+        </section>
+    </main>
 
     <script>
-        // --- PUT YOUR API KEY HERE ---
-        const apiKey = 'AIzaSyAKIFgi0XA-YER25lLDgEB_JqI5vyNwFa8'; 
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const shareBtn = document.getElementById('shareBtn');
+        const userInput = document.getElementById('userInput');
+        const loadingState = document.getElementById('loadingState');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const resultsSection = document.getElementById('resultsSection');
+        const errorState = document.getElementById('errorState');
+        const errorMessage = document.getElementById('errorMessage');
+        const bodyElement = document.getElementById('bodyElement');
 
-        const chaoticLoaders = [
+        // Results elements mapped out
+        const els = {
+            verdict: document.getElementById('verdictText'),
+            overallBar: document.getElementById('overallBar'),
+            overallPct: document.getElementById('overallPercentText'),
+            consensus: document.getElementById('consensusText'),
+            
+            saba: { text: document.getElementById('sabaText'), badge: document.getElementById('sabaBadge'), bar: document.getElementById('sabaBar') },
+            ana: { text: document.getElementById('anaText'), badge: document.getElementById('anaBadge'), bar: document.getElementById('anaBar') },
+            mari: { text: document.getElementById('mariText'), badge: document.getElementById('mariBadge'), bar: document.getElementById('mariBar') },
+            mariam: { text: document.getElementById('mariamText'), badge: document.getElementById('mariamBadge'), bar: document.getElementById('mariamBar') }
+        };
+
+        const anaFlags = [document.getElementById('anaFlag1'), document.getElementById('anaFlag2')];
+        const systemicVictimBadge = document.getElementById('systemicVictimBadge');
+
+        // Humor Configurations (Sweet Mariam Update)
+        const chaoticLoadingMsgs = [
             "Consulting the group chat...",
             "Measuring your try-hard energy...",
-            "Checking if this is performative...",
             "Translating your vibes for Ana...",
+            "Checking if you're 'not like other girls'...",
+            "Saba is aggressively judging your aesthetic...",
             "Asking Mariam for her thoughtful take 🥰...",
-            "Saba is already typing a paragraph..."
+            "Mari is rolling her eyes...",
+            "Checking the 'red flag' database..."
         ];
 
-        const snarkyErrors = [
-            "Ana left the chat. Try again.",
-            "Saba is too busy gatekeeping Linux right now. Try again.",
-            "Mari thinks this error is performative.",
-            "Mariam is patiently waiting for the server to wake up 🌸. Try again."
+        const chaoticErrorMsgs = [
+            "Ana left the chat. Try again later.",
+            "Saba is too busy gatekeeping to analyze this.",
+            "Mari rolled her eyes so hard the server crashed.",
+            "Mariam is patiently waiting for the server to wake up 🌸. Try again.",
+            "The AI refused to read this. It was too embarrassing."
         ];
 
         let loadingInterval;
-        let globalResults = {};
+        let currentResultData = null; // Stored for sharing
 
-        async function runAnalysis() {
-            const input = document.getElementById('input-text').value.trim().toLowerCase();
-            if (!input) return;
+        // Gemini Config
+        const apiKey = "AIzaSyAKIFgi0XA-YER25lLDgEB_JqI5vyNwFa8"; // Keep empty string or replace with actual key
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
-            // UI Reset
-            document.getElementById('results').style.display = 'none';
-            document.getElementById('share-btn').style.display = 'none';
-            document.body.classList.remove('red-flag-bg');
-            document.getElementById('card-ana').classList.remove('ana-alert');
-            
-            const btn = document.getElementById('analyze-btn');
-            const loader = document.getElementById('loading-text');
-            btn.disabled = true;
-            loader.style.display = 'block';
+        const systemPrompt = `You are a chaotic, multi-lingual "Pick-Me" Detector. Analyze sentences (English, Georgian, German) and determine pick-me vibes. Be witty, slightly roasting, and highly analytical.
 
-            // Chaotic Loading animation
-            let loadIndex = 0;
-            loader.innerText = chaoticLoaders[0];
+Friend Panel Logic:
+- Saba: Seeks virtue-signaling, micro-trend gatekeeping, unprompted superiority (e.g. hating popular things).
+- Ana: Detects identity morphing to please a romantic target. Serious red flag alerter.
+- Mari: Calls out high-effort try-hards and performative behavior.
+- Mariam: Analysis based on societal conditioning. Be sweet/respectful, frame it as systemic. Never roast her or the user on her behalf.
+
+Response MUST be a valid JSON.`;
+
+        const responseSchema = {
+            type: "OBJECT",
+            properties: {
+                verdict: { type: "STRING" },
+                overallPercentage: { type: "INTEGER" },
+                generalConsensus: { type: "STRING" },
+                saba: { type: "STRING" }, sabaPercentage: { type: "INTEGER" },
+                ana: { type: "STRING" }, anaPercentage: { type: "INTEGER" },
+                mari: { type: "STRING" }, mariPercentage: { type: "INTEGER" },
+                mariam: { type: "STRING" }, mariamPercentage: { type: "INTEGER" }
+            },
+            required: ["verdict", "overallPercentage", "generalConsensus", "saba", "sabaPercentage", "ana", "anaPercentage", "mari", "mariPercentage", "mariam", "mariamPercentage"]
+        };
+
+        function startLoadingHumor() {
+            let i = 0;
+            loadingMessage.innerText = chaoticLoadingMsgs[0];
             loadingInterval = setInterval(() => {
-                loadIndex = (loadIndex + 1) % chaoticLoaders.length;
-                loader.innerText = chaoticLoaders[loadIndex];
-            }, 2000);
+                i = (i + 1) % chaoticLoadingMsgs.length;
+                loadingMessage.innerText = chaoticLoadingMsgs[i];
+            }, 1800);
+        }
 
-            // EASTER EGG OVERRIDE: Check for specific personal triggers
-            if (input.includes("linux") || input.includes("kubuntu") || input.includes("bouldering")) {
-                clearInterval(loadingInterval);
-                setTimeout(() => applyResults({
-                    verdict: "100% Pick-Me (Beka Edition)",
-                    general: "Let me guess... you're skipping the party to go bouldering or install a new Linux distro?",
-                    saba: { score: 100, text: "Unprompted superiority detected. Major early-adopter gatekeeping energy." },
-                    ana: { score: 50, text: "Not morphing your identity, but definitely forcing a personality." },
-                    mari: { score: 90, text: "Incredibly try-hard. We get it, you use the terminal." },
-                    mariam: { score: 20, text: "Society didn't make you do this, you just really like your hobbies and that's okay ❤️." }
-                }), 1500);
+        function stopLoadingHumor() {
+            clearInterval(loadingInterval);
+        }
+
+        function checkForEasterEgg(text) {
+            const lowerText = text.toLowerCase();
+            if (lowerText.match(/linux|ubuntu|arch|bouldering/)) {
+                return {
+                    verdict: "100% IT/Bouldering Bro Pick-Me",
+                    overallPercentage: 99,
+                    generalConsensus: "You literally just tried to flex a niche hobby or operating system to sound superior. Textbook performative behavior.",
+                    saba: "BINGO! Extreme micro-trend gatekeeping and unprompted superiority. You definitely tell people you 'don't use Windows' at parties.",
+                    sabaPercentage: 100,
+                    ana: "You're molding your entire personality to impress a very specific type of Discord mod. Massive red flag.",
+                    anaPercentage: 75,
+                    mari: "The sheer effort it takes to casually insert your OS or rock climbing into a conversation is exhausting. Absolute try-hard.",
+                    mariPercentage: 95,
+                    mariam: "Society didn't make you do this, you just really like your hobbies and that's okay ❤️.",
+                    mariamPercentage: 20
+                };
+            }
+            return null;
+        }
+
+        async function analyzeText() {
+            const text = userInput.value.trim();
+            if (!text) {
+                showError("Write something first, we can't judge silence.");
                 return;
             }
 
-            // Gemini API Call
-            const prompt = `Analyze this sentence for "Pick-Me" behavior.
-            Sentence: "${input}"
+            // UI Reset
+            errorState.classList.add('hide');
+            resultsSection.classList.add('hide');
+            loadingState.classList.remove('hide');
+            analyzeBtn.disabled = true;
+            analyzeBtn.classList.add('opacity-50');
+            bodyElement.classList.remove('theme-red-alert');
+
+            // 1. Check Easter Egg
+            const easterEggData = checkForEasterEgg(text);
+            if (easterEggData) {
+                // Fake delay for comedic timing
+                startLoadingHumor();
+                setTimeout(() => {
+                    stopLoadingHumor();
+                    renderResults(easterEggData);
+                }, 2000);
+                return;
+            }
+
+            // 2. Fetch from Gemini
+            startLoadingHumor();
             
-            Return ONLY a valid JSON object matching this exact structure:
-            {
-                "verdict": "Short title (e.g. '100% Pick-Me', 'Not a Pick-Me', 'Tragic Pick-Me')",
-                "general": "Brief explanation of general consensus.",
-                "saba": { "score": number 0-100, "text": "Analysis based on performative validation/hipster gatekeeping" },
-                "ana": { "score": number 0-100, "text": "Analysis based on identity morphing/red flags" },
-                "mari": { "score": number 0-100, "text": "Analysis based on forced effort/try-hard" },
-                "mariam": { "score": number 0-100, "text": "Analysis based on societal conditioning. Be sweet/respectful, frame it as systemic." }
-            }`;
+            const payload = {
+                contents: [{ parts: [{ text: text }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                generationConfig: { responseMimeType: "application/json", responseSchema: responseSchema }
+            };
 
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { response_mime_type: "application/json" }
-                    })
+                    body: JSON.stringify(payload)
                 });
 
-                const data = await response.json();
-                const resultText = data.candidates[0].content.parts[0].text;
-                const parsedResult = JSON.parse(resultText);
-                
-                clearInterval(loadingInterval);
-                applyResults(parsedResult);
+                if (!response.ok) throw new Error("API Error");
 
+                const result = await response.json();
+                const jsonString = result.candidates[0].content.parts[0].text;
+                const parsedData = JSON.parse(jsonString);
+                
+                renderResults(parsedData);
             } catch (error) {
-                clearInterval(loadingInterval);
-                const randomError = snarkyErrors[Math.floor(Math.random() * snarkyErrors.length)];
-                loader.innerText = randomError;
-                btn.disabled = false;
+                const randomError = chaoticErrorMsgs[Math.floor(Math.random() * chaoticErrorMsgs.length)];
+                showError(randomError);
+            } finally {
+                stopLoadingHumor();
             }
         }
 
-        function applyResults(data) {
-            globalResults = data;
+        function renderResults(data) {
+            currentResultData = data; // Save for share button
+
+            // Reset UI States
+            loadingState.classList.add('hide');
+            analyzeBtn.disabled = false;
+            analyzeBtn.classList.remove('opacity-50');
+            anaFlags.forEach(f => f.classList.add('hide'));
+            systemicVictimBadge.classList.add('hide');
+            bodyElement.classList.remove('theme-red-alert');
+
+            // Reset bars
+            els.overallBar.style.width = '0%';
+            ['saba', 'ana', 'mari', 'mariam'].forEach(friend => { els[friend].bar.style.width = '0%'; });
+
+            // Populate Text
+            els.verdict.textContent = data.verdict;
+            els.consensus.textContent = data.generalConsensus;
             
-            document.getElementById('main-verdict').innerText = data.verdict;
-            document.getElementById('general-consensus').innerText = data.general;
-
-            const friends = ['saba', 'ana', 'mari', 'mariam'];
-            friends.forEach(friend => {
-                document.getElementById(`score-${friend}`).innerText = `${data[friend].score}%`;
-                document.getElementById(`text-${friend}`).innerText = data[friend].text;
-                
-                // Animate progress bars
-                setTimeout(() => {
-                    document.getElementById(`bar-${friend}`).style.width = `${data[friend].score}%`;
-                }, 100);
+            ['saba', 'ana', 'mari', 'mariam'].forEach(friend => {
+                els[friend].text.textContent = data[friend];
+                els[friend].badge.textContent = `${data[`${friend}Percentage`]}%`;
             });
+            els.overallPct.textContent = `${data.overallPercentage}%`;
 
-            // Dynamic UI: Ana's Red Flag Warning
-            if (data.ana.score >= 80) {
-                document.body.classList.add('red-flag-bg');
-                document.getElementById('card-ana').classList.add('ana-alert');
+            // UI Reactions based on scores
+            if (data.anaPercentage > 80) {
+                bodyElement.classList.add('theme-red-alert');
+                anaFlags.forEach(f => f.classList.remove('hide'));
+            }
+            if (data.mariamPercentage > 50) {
+                systemicVictimBadge.classList.remove('hide');
             }
 
-            document.getElementById('loading-text').style.display = 'none';
-            document.getElementById('results').style.display = 'block';
-            document.getElementById('share-btn').style.display = 'block';
-            document.getElementById('analyze-btn').disabled = false;
+            resultsSection.classList.remove('hide');
+
+            // Trigger animations
+            setTimeout(() => {
+                els.overallBar.style.width = `${data.overallPercentage}%`;
+                ['saba', 'ana', 'mari', 'mariam'].forEach(friend => {
+                    els[friend].bar.style.width = `${data[`${friend}Percentage`]}%`;
+                });
+            }, 100);
         }
 
-        function copyToClipboard() {
-            const text = `🚨 Group Chat Verdict: ${globalResults.verdict} 🚨\nSaba: ${globalResults.saba.score}% | Ana: ${globalResults.ana.score}% | Mari: ${globalResults.mari.score}% | Mariam: ${globalResults.mariam.score}%\n\nAna says: "${globalResults.ana.text}"`;
-            
-            navigator.clipboard.writeText(text).then(() => {
-                const btn = document.getElementById('share-btn');
-                btn.innerText = "✅ Copied to clipboard!";
-                setTimeout(() => { btn.innerText = "📋 Copy Verdict for the Group Chat"; }, 2000);
-            });
+        function showError(msg) {
+            errorMessage.textContent = msg;
+            errorState.classList.remove('hide');
+            loadingState.classList.add('hide');
+            analyzeBtn.disabled = false;
+            analyzeBtn.classList.remove('opacity-50');
+            stopLoadingHumor();
         }
+
+        // Share Button Logic
+        shareBtn.addEventListener('click', () => {
+            if (!currentResultData) return;
+            const shareText = `I just got diagnosed as a ${currentResultData.overallPercentage}% Pick-Me by the group chat checker.\n\nVerdict: "${currentResultData.verdict}"\n\nAna gave me a ${currentResultData.anaPercentage}% red flag score, and Mariam blames society.`;
+            
+            navigator.clipboard.writeText(shareText).then(() => {
+                const originalText = shareBtn.innerHTML;
+                shareBtn.innerHTML = `<span>Copied! 💅</span>`;
+                setTimeout(() => { shareBtn.innerHTML = originalText; }, 2000);
+            }).catch(err => {
+                // Fallback for iframe restrictions
+                const textArea = document.createElement("textarea");
+                textArea.value = shareText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    const originalText = shareBtn.innerHTML;
+                    shareBtn.innerHTML = `<span>Copied! 💅</span>`;
+                    setTimeout(() => { shareBtn.innerHTML = originalText; }, 2000);
+                } catch (e) {
+                    alert("Copy failed. Just screenshot it like a normal person.");
+                }
+                document.body.removeChild(textArea);
+            });
+        });
+
+        // Events
+        analyzeBtn.addEventListener('click', analyzeText);
+        userInput.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                analyzeText();
+            }
+        });
     </script>
 </body>
 </html>
