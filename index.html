@@ -390,9 +390,14 @@
                 const parsedData = JSON.parse(result.candidates[0].content.parts[0].text);
                 renderResults(text, parsedData);
             } catch (error) {
-                document.getElementById('errorState').classList.remove('hide');
                 document.getElementById('loadingState').classList.add('hide');
-                btnAnalyze.disabled = false;
+                const errorState = document.getElementById('errorState');
+                
+                // Print the exact error message so we can fix it
+                document.getElementById('errorMessage').innerText = error.message;
+                
+                errorState.classList.remove('hide');
+                if (typeof btnAnalyze !== 'undefined') btnAnalyze.disabled = false;
             }
         }
 
