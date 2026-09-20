@@ -212,7 +212,6 @@
     </main>
 
     <script>
-        const analyzeBtn = document.getElementById('analyzeBtn');
         const shareBtn = document.getElementById('shareBtn');
         const userInput = document.getElementById('userInput');
         const loadingState = document.getElementById('loadingState');
@@ -221,6 +220,9 @@
         const errorState = document.getElementById('errorState');
         const errorMessage = document.getElementById('errorMessage');
         const bodyElement = document.getElementById('bodyElement');
+
+        const btnAnalyze = document.getElementById('analyzeBtn');
+        const inputStr = document.getElementById('userInput');
 
         // Results elements mapped out
         const els = {
@@ -262,7 +264,7 @@
         let currentResultData = null; // Stored for sharing
 
         // Gemini Config
-        const apiUrl = `https://raspy-moon-3254.arabulibeqa.workers.dev`;
+        const API_URL = "https://raspy-moon-3254.arabulibeqa.workers.dev";
 
         const systemPrompt = `You are a chaotic, multi-lingual "Pick-Me" Detector. Analyze sentences (English, Georgian, German) and determine pick-me vibes. Be witty, slightly roasting, and highly analytical.
 
