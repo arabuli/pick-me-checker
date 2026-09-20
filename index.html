@@ -5,51 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Pick-Me Checker | Dark & Chaotic Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0f172a; /* slate-900 */
-            color: #f8fafc; /* slate-50 */
+            background-color: #0f172a;
+            color: #f8fafc;
             background-image: radial-gradient(#334155 1px, transparent 1px);
             background-size: 24px 24px;
             transition: background-color 0.5s ease;
         }
         
-        /* Glassmorphism for Dark Mode */
         .glass-panel {
-            background: rgba(30, 41, 59, 0.85); /* slate-800 */
+            background: rgba(30, 41, 59, 0.85);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .card-bg {
-            background: rgba(15, 23, 42, 0.6); /* slate-900 */
+            background: rgba(15, 23, 42, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .hide {
-            display: none !important;
-        }
+        .hide { display: none !important; }
 
-        /* Scrollbar */
         textarea::-webkit-scrollbar { width: 8px; }
         textarea::-webkit-scrollbar-track { background: #1e293b; border-radius: 4px; }
         textarea::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
-        textarea::-webkit-scrollbar-thumb:hover { background: #64748b; }
-
+        
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .animate-fade-in-up {
-            animation: fadeInUp 0.5s ease-out forwards;
-        }
+        .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
 
         @keyframes redAlertPulse {
             0% { background-color: #0f172a; }
-            50% { background-color: #450a0a; } /* dark red */
+            50% { background-color: #450a0a; }
             100% { background-color: #0f172a; }
         }
         .theme-red-alert {
@@ -57,31 +51,44 @@
             background-image: radial-gradient(#7f1d1d 1px, transparent 1px);
         }
 
-        /* Floating red flags for Ana's wrath */
-        @keyframes float {
-            0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-10px) rotate(10deg); }
-            100% { transform: translateY(0px) rotate(0deg); }
+        .nav-btn {
+            padding: 0.5rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: bold;
+            transition: all 0.3s;
         }
-        .floating-flag {
-            animation: float 2s ease-in-out infinite;
+        .nav-btn.active {
+            background: linear-gradient(to right, #c026d3, #9333ea);
+            color: white;
+            box-shadow: 0 0 15px rgba(192, 38, 211, 0.4);
         }
+        .nav-btn.inactive {
+            background: rgba(30, 41, 59, 0.8);
+            color: #94a3b8;
+        }
+        .nav-btn.inactive:hover { color: white; background: rgba(51, 65, 85, 0.8); }
     </style>
 </head>
-<body id="bodyElement" class="min-h-screen flex items-center justify-center p-4">
+<body id="bodyElement" class="min-h-screen flex flex-col items-center py-8 px-4 gap-6">
 
-    <main class="glass-panel w-full max-w-5xl rounded-3xl shadow-2xl p-6 sm:p-10 transition-all duration-300 flex flex-col gap-8 relative overflow-hidden">
-        
-        <header class="text-center space-y-3 z-10">
+    <!-- Navigation -->
+    <nav class="flex gap-4 glass-panel p-2 rounded-full z-20">
+        <button id="navScanner" class="nav-btn active">🔍 The Scanner</button>
+        <button id="navHall" class="nav-btn inactive">🏆 Hall of Shame</button>
+    </nav>
+
+    <!-- Main Scanner View -->
+    <main id="viewScanner" class="glass-panel w-full max-w-5xl rounded-3xl shadow-2xl p-6 sm:p-10 transition-all duration-300 flex flex-col gap-8 relative overflow-hidden z-10">
+        <header class="text-center space-y-3">
             <h1 class="text-4xl sm:text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-purple-500 to-indigo-500 drop-shadow-sm">
-                The Pick-Me Checker 🔍
+                The Pick-Me Checker
             </h1>
             <p class="text-slate-400 font-medium text-sm sm:text-base max-w-xl mx-auto">
                 Drop a sentence in English, Georgian, or German. Let the group chat mercilessly judge your vibe.
             </p>
         </header>
 
-        <section class="flex flex-col gap-5 z-10">
+        <section class="flex flex-col gap-5">
             <textarea id="userInput" rows="4" 
                 class="w-full p-5 rounded-2xl bg-slate-900 border-2 border-slate-700 focus:border-fuchsia-500 focus:ring focus:ring-fuchsia-500/20 transition-all resize-none shadow-inner text-lg placeholder-slate-600 text-slate-100 outline-none"
                 placeholder="e.g., 'I actually don't own a TV, I just read philosophy and boulder...'"></textarea>
@@ -91,7 +98,7 @@
             </button>
         </section>
 
-        <div id="loadingState" class="hide flex flex-col items-center justify-center py-12 space-y-6 z-10">
+        <div id="loadingState" class="hide flex flex-col items-center justify-center py-12 space-y-6">
             <div class="relative w-16 h-16">
                 <div class="absolute inset-0 rounded-full border-t-4 border-fuchsia-500 animate-spin"></div>
                 <div class="absolute inset-2 rounded-full border-b-4 border-purple-500 animate-spin" style="animation-direction: reverse; animation-duration: 1.5s;"></div>
@@ -101,310 +108,304 @@
             </p>
         </div>
 
-        <div id="errorState" class="hide bg-red-900/40 border border-red-500/50 text-red-200 px-6 py-4 rounded-2xl text-center backdrop-blur-sm z-10">
+        <div id="errorState" class="hide bg-red-900/40 border border-red-500/50 text-red-200 px-6 py-4 rounded-2xl text-center backdrop-blur-sm">
             <p id="errorMessage" class="font-bold text-lg">Oops! Something went wrong.</p>
         </div>
 
-        <section id="resultsSection" class="hide flex flex-col gap-8 animate-fade-in-up z-10">
+        <section id="resultsSection" class="hide flex flex-col gap-8 animate-fade-in-up">
             
-            <!-- Verdict -->
-            <div class="card-bg rounded-3xl p-8 shadow-xl text-center space-y-6 relative overflow-hidden group">
-                <div class="absolute -inset-1 bg-gradient-to-r from-fuchsia-500 via-purple-500 to-indigo-500 rounded-3xl blur opacity-20 group-hover:opacity-30 transition duration-1000"></div>
-                <div class="relative">
-                    <h2 class="text-xs uppercase tracking-[0.2em] text-slate-400 font-black mb-2">The Verdict</h2>
-                    <div id="verdictText" class="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-400 mb-6">
-                        <!-- Verdict -->
-                    </div>
-                    
-                    <div class="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
-                        <div class="w-full max-w-md bg-slate-800 rounded-full h-4 shadow-inner overflow-hidden">
-                            <div id="overallBar" class="bg-gradient-to-r from-fuchsia-500 to-purple-500 h-4 rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+            <!-- EXPORT TARGET: Everything inside here gets screenshotted -->
+            <div id="exportArea" class="space-y-8 bg-slate-900 p-6 rounded-3xl border border-slate-800">
+                
+                <!-- Verdict -->
+                <div class="card-bg rounded-3xl p-8 shadow-xl text-center space-y-6 relative overflow-hidden group">
+                    <div class="absolute -inset-1 bg-gradient-to-r from-fuchsia-500 via-purple-500 to-indigo-500 rounded-3xl blur opacity-20 group-hover:opacity-30 transition duration-1000"></div>
+                    <div class="relative">
+                        <h2 class="text-xs uppercase tracking-[0.2em] text-slate-400 font-black mb-2">The Verdict</h2>
+                        <div id="verdictText" class="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-400 mb-6"></div>
+                        
+                        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+                            <div class="w-full max-w-md bg-slate-800 rounded-full h-4 shadow-inner overflow-hidden">
+                                <div id="overallBar" class="bg-gradient-to-r from-fuchsia-500 to-purple-500 h-4 rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                            </div>
+                            <span id="overallPercentText" class="font-black text-fuchsia-400 text-3xl w-20 text-center drop-shadow-md">0%</span>
                         </div>
-                        <span id="overallPercentText" class="font-black text-fuchsia-400 text-3xl w-20 text-center drop-shadow-md">0%</span>
+
+                        <p id="consensusText" class="text-slate-300 leading-relaxed sm:text-lg text-left bg-slate-950/80 p-5 rounded-xl mt-6 border border-slate-700/50 italic"></p>
                     </div>
-
-                    <p id="consensusText" class="text-slate-300 leading-relaxed sm:text-lg text-left bg-slate-900/80 p-5 rounded-xl mt-6 border border-slate-700/50 italic">
-                        <!-- Consensus -->
-                    </p>
                 </div>
-            </div>
 
-            <div class="space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     
                     <!-- Saba -->
-                    <div class="card-bg rounded-2xl p-6 shadow-lg border-l-4 border-l-cyan-400 hover:-translate-y-1 transition-transform relative">
+                    <div class="card-bg rounded-2xl p-6 shadow-lg border-l-4 border-l-cyan-400">
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center gap-3">
                                 <span class="text-2xl drop-shadow-md">💅</span>
                                 <h4 class="font-black text-slate-100 text-lg">Saba's Take</h4>
                             </div>
-                            <span id="sabaBadge" class="bg-cyan-900/50 text-cyan-300 border border-cyan-700/50 py-1 px-3 rounded-lg font-black text-sm">0%</span>
-                        </div>
-                        <div class="w-full bg-slate-800 rounded-full h-2 mb-4 overflow-hidden">
-                            <div id="sabaBar" class="bg-cyan-400 h-2 rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(34,211,238,0.5)]" style="width: 0%"></div>
+                            <span id="sabaBadge" class="bg-cyan-900/50 text-cyan-300 py-1 px-3 rounded-lg font-black text-sm">0%</span>
                         </div>
                         <p id="sabaText" class="text-sm text-slate-300 leading-relaxed">...</p>
                     </div>
 
                     <!-- Ana -->
-                    <div id="anaCard" class="card-bg rounded-2xl p-6 shadow-lg border-l-4 border-l-red-500 hover:-translate-y-1 transition-transform relative overflow-hidden">
-                        <!-- Hidden flags for UI reaction -->
-                        <span id="anaFlag1" class="floating-flag absolute top-2 right-12 text-2xl hide opacity-50">🚩</span>
-                        <span id="anaFlag2" class="floating-flag absolute bottom-2 right-4 text-3xl hide opacity-30" style="animation-delay: 0.5s;">🚩</span>
-
-                        <div class="flex items-center justify-between mb-4 relative z-10">
+                    <div class="card-bg rounded-2xl p-6 shadow-lg border-l-4 border-l-red-500">
+                        <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center gap-3">
                                 <span class="text-2xl drop-shadow-md">🚩</span>
                                 <h4 class="font-black text-slate-100 text-lg">Ana's Take</h4>
                             </div>
-                            <span id="anaBadge" class="bg-red-900/50 text-red-300 border border-red-700/50 py-1 px-3 rounded-lg font-black text-sm">0%</span>
+                            <span id="anaBadge" class="bg-red-900/50 text-red-300 py-1 px-3 rounded-lg font-black text-sm">0%</span>
                         </div>
-                        <div class="w-full bg-slate-800 rounded-full h-2 mb-4 overflow-hidden relative z-10">
-                            <div id="anaBar" class="bg-red-500 h-2 rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(239,68,68,0.5)]" style="width: 0%"></div>
-                        </div>
-                        <p id="anaText" class="text-sm text-slate-300 leading-relaxed relative z-10">...</p>
+                        <p id="anaText" class="text-sm text-slate-300 leading-relaxed">...</p>
                     </div>
 
                     <!-- Mari -->
-                    <div class="card-bg rounded-2xl p-6 shadow-lg border-l-4 border-l-yellow-400 hover:-translate-y-1 transition-transform">
+                    <div class="card-bg rounded-2xl p-6 shadow-lg border-l-4 border-l-yellow-400">
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center gap-3">
                                 <span class="text-2xl drop-shadow-md">🎭</span>
                                 <h4 class="font-black text-slate-100 text-lg">Mari's Take</h4>
                             </div>
-                            <span id="mariBadge" class="bg-yellow-900/50 text-yellow-300 border border-yellow-700/50 py-1 px-3 rounded-lg font-black text-sm">0%</span>
-                        </div>
-                        <div class="w-full bg-slate-800 rounded-full h-2 mb-4 overflow-hidden">
-                            <div id="mariBar" class="bg-yellow-400 h-2 rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(250,204,21,0.5)]" style="width: 0%"></div>
+                            <span id="mariBadge" class="bg-yellow-900/50 text-yellow-300 py-1 px-3 rounded-lg font-black text-sm">0%</span>
                         </div>
                         <p id="mariText" class="text-sm text-slate-300 leading-relaxed">...</p>
                     </div>
 
                     <!-- Mariam -->
-                    <div class="card-bg rounded-2xl p-6 shadow-lg border-l-4 border-l-emerald-400 hover:-translate-y-1 transition-transform relative">
+                    <div class="card-bg rounded-2xl p-6 shadow-lg border-l-4 border-l-emerald-400">
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center gap-3">
                                 <span class="text-2xl drop-shadow-md">❤️</span>
-                                <h4 class="font-black text-slate-100 text-lg flex items-center gap-2 text-pink-400">
-                                    Mariam
-                                    <span id="systemicVictimBadge" title="Systemic Victim" class="hide text-sm bg-emerald-900/80 border border-emerald-500 text-emerald-300 px-2 py-0.5 rounded-full shadow-lg ml-1">🛡️ Victim</span>
-                                </h4>
+                                <h4 class="font-black text-pink-400 text-lg">Mariam</h4>
                             </div>
-                            <span id="mariamBadge" class="bg-emerald-900/50 text-emerald-300 border border-emerald-700/50 py-1 px-3 rounded-lg font-black text-sm">0%</span>
-                        </div>
-                        <div class="w-full bg-slate-800 rounded-full h-2 mb-4 overflow-hidden">
-                            <div id="mariamBar" class="bg-emerald-400 h-2 rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(52,211,153,0.5)]" style="width: 0%"></div>
+                            <span id="mariamBadge" class="bg-emerald-900/50 text-emerald-300 py-1 px-3 rounded-lg font-black text-sm">0%</span>
                         </div>
                         <p id="mariamText" class="text-sm text-slate-300 leading-relaxed">...</p>
                     </div>
-
                 </div>
-            </div>
+            </div> <!-- End Export Area -->
 
-            <div class="flex justify-center mt-4">
-                <button id="shareBtn" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold py-3 px-8 rounded-xl shadow-lg transition-colors flex items-center gap-2 group">
-                    <span class="group-hover:rotate-12 transition-transform">🔗</span> 
-                    <span>Copy to roast in Group Chat</span>
+            <div class="flex flex-col sm:flex-row justify-center gap-4 mt-2">
+                <button id="shareBtn" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold py-3 px-8 rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2">
+                    🔗 Copy Text
+                </button>
+                <button id="exportImageBtn" class="bg-gradient-to-r from-pink-600 to-orange-500 hover:from-pink-500 hover:to-orange-400 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2">
+                    📸 Save for IG Story
                 </button>
             </div>
         </section>
     </main>
 
-    <script>
-        const shareBtn = document.getElementById('shareBtn');
-        const userInput = document.getElementById('userInput');
-        const loadingState = document.getElementById('loadingState');
-        const loadingMessage = document.getElementById('loadingMessage');
-        const resultsSection = document.getElementById('resultsSection');
-        const errorState = document.getElementById('errorState');
-        const errorMessage = document.getElementById('errorMessage');
-        const bodyElement = document.getElementById('bodyElement');
+    <!-- Hall of Shame View -->
+    <main id="viewHall" class="hide glass-panel w-full max-w-5xl rounded-3xl shadow-2xl p-6 sm:p-10 transition-all duration-300 flex flex-col gap-8 z-10">
+        <header class="text-center space-y-3">
+            <h1 class="text-4xl sm:text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500 drop-shadow-sm">
+                The Hall of Shame 🏆
+            </h1>
+            <p class="text-slate-400 font-medium text-sm sm:text-base max-w-xl mx-auto">
+                The most tragic, performative, and try-hard sentences currently in the database.
+            </p>
+        </header>
 
+        <div id="leaderboardList" class="flex flex-col gap-4 mt-4">
+            <!-- Populated via JS -->
+        </div>
+    </main>
+
+    <script>
+        const API_URL = "https://YOUR-WORKER-NAME.YOUR-SUBDOMAIN.workers.dev";
+        
+        // UI Elements
         const btnAnalyze = document.getElementById('analyzeBtn');
         const inputStr = document.getElementById('userInput');
-
-        // Results elements mapped out
+        const viewScanner = document.getElementById('viewScanner');
+        const viewHall = document.getElementById('viewHall');
+        const navScanner = document.getElementById('navScanner');
+        const navHall = document.getElementById('navHall');
+        const exportImageBtn = document.getElementById('exportImageBtn');
+        const leaderboardList = document.getElementById('leaderboardList');
+        
         const els = {
             verdict: document.getElementById('verdictText'),
             overallBar: document.getElementById('overallBar'),
             overallPct: document.getElementById('overallPercentText'),
             consensus: document.getElementById('consensusText'),
-            
-            saba: { text: document.getElementById('sabaText'), badge: document.getElementById('sabaBadge'), bar: document.getElementById('sabaBar') },
-            ana: { text: document.getElementById('anaText'), badge: document.getElementById('anaBadge'), bar: document.getElementById('anaBar') },
-            mari: { text: document.getElementById('mariText'), badge: document.getElementById('mariBadge'), bar: document.getElementById('mariBar') },
-            mariam: { text: document.getElementById('mariamText'), badge: document.getElementById('mariamBadge'), bar: document.getElementById('mariamBar') }
+            saba: { text: document.getElementById('sabaText'), badge: document.getElementById('sabaBadge') },
+            ana: { text: document.getElementById('anaText'), badge: document.getElementById('anaBadge') },
+            mari: { text: document.getElementById('mariText'), badge: document.getElementById('mariBadge') },
+            mariam: { text: document.getElementById('mariamText'), badge: document.getElementById('mariamBadge') }
         };
 
-        const anaFlags = [document.getElementById('anaFlag1'), document.getElementById('anaFlag2')];
-        const systemicVictimBadge = document.getElementById('systemicVictimBadge');
+        let currentResultData = null;
 
-        // Humor Configurations (Sweet Mariam Update)
-        const chaoticLoadingMsgs = [
-            "Consulting the group chat...",
-            "Measuring your try-hard energy...",
-            "Translating your vibes for Ana...",
-            "Checking if you're 'not like other girls'...",
-            "Saba is aggressively judging your aesthetic...",
-            "Asking Mariam for her thoughtful take 🥰...",
-            "Mari is rolling her eyes...",
-            "Checking the 'red flag' database..."
-        ];
+        // --- Navigation Logic ---
+        navScanner.addEventListener('click', () => {
+            viewScanner.classList.remove('hide');
+            viewHall.classList.add('hide');
+            navScanner.className = 'nav-btn active';
+            navHall.className = 'nav-btn inactive';
+        });
 
-        const chaoticErrorMsgs = [
-            "Ana left the chat. Try again later.",
-            "Saba is too busy gatekeeping to analyze this.",
-            "Mari rolled her eyes so hard the server crashed.",
-            "Mariam is patiently waiting for the server to wake up 🌸. Try again.",
-            "The AI refused to read this. It was too embarrassing."
-        ];
+        navHall.addEventListener('click', () => {
+            viewScanner.classList.add('hide');
+            viewHall.classList.remove('hide');
+            navScanner.className = 'nav-btn inactive';
+            navHall.className = 'nav-btn active';
+            loadLeaderboard();
+        });
 
-        let loadingInterval;
-        let currentResultData = null; // Stored for sharing
-
-        // Gemini Config
-        const API_URL = "https://raspy-moon-3254.arabulibeqa.workers.dev";
-
-        const systemPrompt = `You are a chaotic, multi-lingual "Pick-Me" Detector. Analyze sentences (English, Georgian, German) and determine pick-me vibes. Be witty, slightly roasting, and highly analytical.
-
-Friend Panel Logic:
-- Saba: Seeks virtue-signaling, micro-trend gatekeeping, unprompted superiority (e.g. hating popular things).
-- Ana: Detects identity morphing to please a romantic target. Serious red flag alerter.
-- Mari: Calls out high-effort try-hards and performative behavior.
-- Mariam: Analysis based on societal conditioning. Be sweet/respectful, frame it as systemic. Never roast her or the user on her behalf.
-
-Response MUST be a valid JSON.`;
-
-        const responseSchema = {
-            type: "OBJECT",
-            properties: {
-                verdict: { type: "STRING" },
-                overallPercentage: { type: "INTEGER" },
-                generalConsensus: { type: "STRING" },
-                saba: { type: "STRING" }, sabaPercentage: { type: "INTEGER" },
-                ana: { type: "STRING" }, anaPercentage: { type: "INTEGER" },
-                mari: { type: "STRING" }, mariPercentage: { type: "INTEGER" },
-                mariam: { type: "STRING" }, mariamPercentage: { type: "INTEGER" }
-            },
-            required: ["verdict", "overallPercentage", "generalConsensus", "saba", "sabaPercentage", "ana", "anaPercentage", "mari", "mariPercentage", "mariam", "mariamPercentage"]
-        };
-
-        function startLoadingHumor() {
-            let i = 0;
-            loadingMessage.innerText = chaoticLoadingMsgs[0];
-            loadingInterval = setInterval(() => {
-                i = (i + 1) % chaoticLoadingMsgs.length;
-                loadingMessage.innerText = chaoticLoadingMsgs[i];
-            }, 1800);
-        }
-
-        function stopLoadingHumor() {
-            clearInterval(loadingInterval);
-        }
-
-        function checkForEasterEgg(text) {
-            const lowerText = text.toLowerCase();
-            if (lowerText.match(/linux|ubuntu|arch|bouldering/)) {
-                return {
-                    verdict: "100% IT/Bouldering Bro Pick-Me",
-                    overallPercentage: 99,
-                    generalConsensus: "You literally just tried to flex a niche hobby or operating system to sound superior. Textbook performative behavior.",
-                    saba: "BINGO! Extreme micro-trend gatekeeping and unprompted superiority. You definitely tell people you 'don't use Windows' at parties.",
-                    sabaPercentage: 100,
-                    ana: "You're molding your entire personality to impress a very specific type of Discord mod. Massive red flag.",
-                    anaPercentage: 75,
-                    mari: "The sheer effort it takes to casually insert your OS or rock climbing into a conversation is exhausting. Absolute try-hard.",
-                    mariPercentage: 95,
-                    mariam: "Society didn't make you do this, you just really like your hobbies and that's okay ❤️.",
-                    mariamPercentage: 20
-                };
+        // --- Simulated Database (localStorage) ---
+        function saveToDatabase(sentence, data) {
+            if (data.overallPercentage >= 80) {
+                let db = JSON.parse(localStorage.getItem('hallOfShameDB') || '[]');
+                db.push({
+                    sentence: sentence,
+                    score: data.overallPercentage,
+                    verdict: data.verdict,
+                    date: new Date().toLocaleDateString()
+                });
+                // Sort highest first, keep top 20
+                db.sort((a, b) => b.score - a.score);
+                db = db.slice(0, 20);
+                localStorage.setItem('hallOfShameDB', JSON.stringify(db));
             }
-            return null;
         }
+
+        function loadLeaderboard() {
+            const db = JSON.parse(localStorage.getItem('hallOfShameDB') || '[]');
+            leaderboardList.innerHTML = '';
+            
+            if (db.length === 0) {
+                leaderboardList.innerHTML = `<p class="text-center text-slate-500 italic">No tragic entries yet. Start scanning to populate the database.</p>`;
+                return;
+            }
+
+            db.forEach((entry, index) => {
+                const rankColor = index === 0 ? 'text-yellow-400' : (index === 1 ? 'text-slate-300' : (index === 2 ? 'text-amber-600' : 'text-slate-500'));
+                const card = `
+                    <div class="card-bg p-5 rounded-2xl flex flex-col sm:flex-row items-center gap-4 shadow-lg hover:shadow-xl transition-shadow border-l-4 ${index === 0 ? 'border-yellow-400' : 'border-slate-700'}">
+                        <div class="text-4xl font-black ${rankColor} w-12 text-center">#${index + 1}</div>
+                        <div class="flex-1">
+                            <p class="text-slate-200 text-lg font-medium italic">"${entry.sentence}"</p>
+                            <p class="text-slate-400 text-sm mt-1">${entry.verdict} • Detected on ${entry.date}</p>
+                        </div>
+                        <div class="text-3xl font-black text-red-500 bg-red-950/50 px-4 py-2 rounded-xl border border-red-900/50">
+                            ${entry.score}%
+                        </div>
+                    </div>
+                `;
+                leaderboardList.innerHTML += card;
+            });
+        }
+
+        // --- IG Story Exporter ---
+        exportImageBtn.addEventListener('click', () => {
+            const exportArea = document.getElementById('exportArea');
+            const originalBg = exportArea.style.backgroundColor;
+            
+            // html2canvas needs a solid background to render correctly
+            exportArea.style.backgroundColor = '#0f172a';
+            exportImageBtn.innerHTML = "📸 Generating...";
+
+            html2canvas(exportArea, {
+                scale: 2, // High resolution for IG
+                backgroundColor: '#0f172a',
+                logging: false,
+                useCORS: true
+            }).then(canvas => {
+                // Restore bg
+                exportArea.style.backgroundColor = originalBg;
+                exportImageBtn.innerHTML = "📸 Save for IG Story";
+
+                // Trigger Download
+                const link = document.createElement('a');
+                link.download = `PickMe_Verdict_${new Date().getTime()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        });
+
+        // --- Core Logic ---
+        const systemPrompt = `You are a chaotic, multi-lingual "Pick-Me" Detector. Analyze sentences (English, Georgian, German).
+        Saba: Seeks virtue-signaling, micro-trend gatekeeping.
+        Ana: Detects identity morphing.
+        Mari: Calls out high-effort try-hards.
+        Mariam: Analysis based on societal conditioning. Be sweet, frame it as systemic.
+        Response MUST be valid JSON.`;
 
         async function analyzeText() {
-            const text = userInput.value.trim();
-            if (!text) {
-                showError("Write something first, we can't judge silence.");
-                return;
-            }
+            const text = inputStr.value.trim();
+            if (!text) return;
 
-            // UI Reset
-            errorState.classList.add('hide');
-            resultsSection.classList.add('hide');
-            loadingState.classList.remove('hide');
-            analyzeBtn.disabled = true;
-            analyzeBtn.classList.add('opacity-50');
-            bodyElement.classList.remove('theme-red-alert');
+            document.getElementById('errorState').classList.add('hide');
+            document.getElementById('resultsSection').classList.add('hide');
+            document.getElementById('loadingState').classList.remove('hide');
+            btnAnalyze.disabled = true;
+            document.getElementById('bodyElement').classList.remove('theme-red-alert');
 
-            // 1. Check Easter Egg
-            const easterEggData = checkForEasterEgg(text);
-            if (easterEggData) {
-                // Fake delay for comedic timing
-                startLoadingHumor();
+            // Quick Easter Egg bypass for instant UI testing
+            if (text.toLowerCase().match(/linux|ubuntu|arch|bouldering/)) {
                 setTimeout(() => {
-                    stopLoadingHumor();
-                    renderResults(easterEggData);
-                }, 2000);
+                    const egg = {
+                        verdict: "100% IT/Bouldering Bro Pick-Me", overallPercentage: 99,
+                        generalConsensus: "You literally just tried to flex a niche hobby or operating system to sound superior.",
+                        saba: "Extreme micro-trend gatekeeping.", sabaPercentage: 100,
+                        ana: "Molding personality for Discord mods.", anaPercentage: 75,
+                        mari: "Absolute try-hard.", mariPercentage: 95,
+                        mariam: "Society didn't make you do this, you just really like hobbies ❤️", mariamPercentage: 20
+                    };
+                    renderResults(text, egg);
+                }, 1500);
                 return;
             }
-
-            // 2. Fetch from Gemini
-            startLoadingHumor();
-            
-            const payload = {
-                contents: [{ parts: [{ text: text }] }],
-                systemInstruction: { parts: [{ text: systemPrompt }] },
-                generationConfig: { responseMimeType: "application/json", responseSchema: responseSchema }
-            };
 
             try {
-                const response = await fetch(apiUrl, {
+                const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: text }] }],
+                        systemInstruction: { parts: [{ text: systemPrompt }] },
+                        generationConfig: { 
+                            responseMimeType: "application/json",
+                            responseSchema: {
+                                type: "OBJECT",
+                                properties: {
+                                    verdict: { type: "STRING" }, overallPercentage: { type: "INTEGER" },
+                                    generalConsensus: { type: "STRING" },
+                                    saba: { type: "STRING" }, sabaPercentage: { type: "INTEGER" },
+                                    ana: { type: "STRING" }, anaPercentage: { type: "INTEGER" },
+                                    mari: { type: "STRING" }, mariPercentage: { type: "INTEGER" },
+                                    mariam: { type: "STRING" }, mariamPercentage: { type: "INTEGER" }
+                                },
+                                required: ["verdict", "overallPercentage", "generalConsensus", "saba", "sabaPercentage", "ana", "anaPercentage", "mari", "mariPercentage", "mariam", "mariamPercentage"]
+                            }
+                        }
+                    })
                 });
 
-                if (!response.ok) throw new Error("API Error");
-
                 const result = await response.json();
-                const jsonString = result.candidates[0].content.parts[0].text;
-                const parsedData = JSON.parse(jsonString);
-                
-                renderResults(parsedData);
+                const parsedData = JSON.parse(result.candidates[0].content.parts[0].text);
+                renderResults(text, parsedData);
             } catch (error) {
+                document.getElementById('errorState').classList.remove('hide');
                 document.getElementById('loadingState').classList.add('hide');
-                const errorState = document.getElementById('errorState');
-                
-                // If it's a 429 speed limit error
-                if (error.message.includes("429") || error.message === "API Error") {
-                    document.getElementById('errorMessage').innerText = "Whoa, slow down! The AI needs a minute to breathe. Try again in 60 seconds.";
-                } else {
-                    document.getElementById('errorMessage').innerText = "Oops! Something went wrong.";
-                }
-                
-                errorState.classList.remove('hide');
                 btnAnalyze.disabled = false;
             }
         }
 
-        function renderResults(data) {
-            currentResultData = data; // Save for share button
+        function renderResults(sentence, data) {
+            currentResultData = data;
+            
+            // Save high scores to the local database
+            saveToDatabase(sentence, data);
 
-            // Reset UI States
-            loadingState.classList.add('hide');
-            analyzeBtn.disabled = false;
-            analyzeBtn.classList.remove('opacity-50');
-            anaFlags.forEach(f => f.classList.add('hide'));
-            systemicVictimBadge.classList.add('hide');
-            bodyElement.classList.remove('theme-red-alert');
-
-            // Reset bars
+            document.getElementById('loadingState').classList.add('hide');
+            btnAnalyze.disabled = false;
             els.overallBar.style.width = '0%';
-            ['saba', 'ana', 'mari', 'mariam'].forEach(friend => { els[friend].bar.style.width = '0%'; });
 
-            // Populate Text
             els.verdict.textContent = data.verdict;
             els.consensus.textContent = data.generalConsensus;
             
@@ -414,69 +415,26 @@ Response MUST be a valid JSON.`;
             });
             els.overallPct.textContent = `${data.overallPercentage}%`;
 
-            // UI Reactions based on scores
-            if (data.anaPercentage > 80) {
-                bodyElement.classList.add('theme-red-alert');
-                anaFlags.forEach(f => f.classList.remove('hide'));
-            }
-            if (data.mariamPercentage > 50) {
-                systemicVictimBadge.classList.remove('hide');
-            }
+            if (data.anaPercentage > 80) document.getElementById('bodyElement').classList.add('theme-red-alert');
 
-            resultsSection.classList.remove('hide');
-
-            // Trigger animations
-            setTimeout(() => {
-                els.overallBar.style.width = `${data.overallPercentage}%`;
-                ['saba', 'ana', 'mari', 'mariam'].forEach(friend => {
-                    els[friend].bar.style.width = `${data[`${friend}Percentage`]}%`;
-                });
-            }, 100);
+            document.getElementById('resultsSection').classList.remove('hide');
+            setTimeout(() => { els.overallBar.style.width = `${data.overallPercentage}%`; }, 100);
         }
 
-        function showError(msg) {
-            errorMessage.textContent = msg;
-            errorState.classList.remove('hide');
-            loadingState.classList.add('hide');
-            analyzeBtn.disabled = false;
-            analyzeBtn.classList.remove('opacity-50');
-            stopLoadingHumor();
+        btnAnalyze.addEventListener('click', analyzeText);
+        document.getElementById('shareBtn').addEventListener('click', () => {
+            navigator.clipboard.writeText(`I got a ${currentResultData.overallPercentage}% Pick-Me score.\nVerdict: "${currentResultData.verdict}"`);
+            document.getElementById('shareBtn').innerText = "✅ Copied!";
+            setTimeout(() => { document.getElementById('shareBtn').innerText = "🔗 Copy Text"; }, 2000);
+        });
+
+        // Initialize fake database if empty for demo purposes
+        if (!localStorage.getItem('hallOfShameDB')) {
+            localStorage.setItem('hallOfShameDB', JSON.stringify([{
+                sentence: "Actually, I prefer reading classic literature at home while other girls go out and drink.",
+                score: 95, verdict: "Textbook NLOG", date: new Date().toLocaleDateString()
+            }]));
         }
-
-        // Share Button Logic
-        shareBtn.addEventListener('click', () => {
-            if (!currentResultData) return;
-            const shareText = `I just got diagnosed as a ${currentResultData.overallPercentage}% Pick-Me by the group chat checker.\n\nVerdict: "${currentResultData.verdict}"\n\nAna gave me a ${currentResultData.anaPercentage}% red flag score, and Mariam blames society.`;
-            
-            navigator.clipboard.writeText(shareText).then(() => {
-                const originalText = shareBtn.innerHTML;
-                shareBtn.innerHTML = `<span>Copied! 💅</span>`;
-                setTimeout(() => { shareBtn.innerHTML = originalText; }, 2000);
-            }).catch(err => {
-                // Fallback for iframe restrictions
-                const textArea = document.createElement("textarea");
-                textArea.value = shareText;
-                document.body.appendChild(textArea);
-                textArea.select();
-                try {
-                    document.execCommand('copy');
-                    const originalText = shareBtn.innerHTML;
-                    shareBtn.innerHTML = `<span>Copied! 💅</span>`;
-                    setTimeout(() => { shareBtn.innerHTML = originalText; }, 2000);
-                } catch (e) {
-                    alert("Copy failed. Just screenshot it like a normal person.");
-                }
-                document.body.removeChild(textArea);
-            });
-        });
-
-        // Events
-        analyzeBtn.addEventListener('click', analyzeText);
-        userInput.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                analyzeText();
-            }
-        });
     </script>
 </body>
 </html>
