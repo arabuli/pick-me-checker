@@ -372,10 +372,18 @@ Response MUST be a valid JSON.`;
                 
                 renderResults(parsedData);
             } catch (error) {
-                const randomError = chaoticErrorMsgs[Math.floor(Math.random() * chaoticErrorMsgs.length)];
-                showError(randomError);
-            } finally {
-                stopLoadingHumor();
+                document.getElementById('loadingState').classList.add('hide');
+                const errorState = document.getElementById('errorState');
+                
+                // If it's a 429 speed limit error
+                if (error.message.includes("429") || error.message === "API Error") {
+                    document.getElementById('errorMessage').innerText = "Whoa, slow down! The AI needs a minute to breathe. Try again in 60 seconds.";
+                } else {
+                    document.getElementById('errorMessage').innerText = "Oops! Something went wrong.";
+                }
+                
+                errorState.classList.remove('hide');
+                btnAnalyze.disabled = false;
             }
         }
 
